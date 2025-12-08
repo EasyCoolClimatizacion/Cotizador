@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EasyCool Mobile App</title>
+    
+    <!-- Meta tags para comportamiento de App en Android/iOS -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1f2937"> <!-- Color de la barra de estado -->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        /* Estilos de edición táctil */
+        [contenteditable="true"]:hover { outline: 2px dashed #a5b4fc; }
+        [contenteditable="true"]:focus { outline: 2px solid #6366f1; background-color: #eef2ff; border-radius: 4px; padding: 4px; }
+        
+        /* Mejoras visuales móviles */
+        .input-mobile { font-size: 16px; /* Evita zoom automático en iOS */ }
+        .tap-target { min-height: 44px; /* Tamaño mínimo dedo */ }
+        
+        .calculator-section { background: linear-gradient(145deg, #f9fafb, #f3f4f6); padding-bottom: 80px; /* Espacio para botón flotante */ }
+        
+        .modal { transition: opacity 0.25s ease; z-index: 50; }
+        .modal-content { transition: transform 0.25s ease; max-height: 85vh; }
+        
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #ffffff; border-radius: 50%;
+            width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; margin-right: 8px; vertical-align: middle;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Tipografía específica */
+        .header-logo-text { font-family: 'Poppins', sans-serif; }
+        .header-company-info { font-family: 'Inter', sans-serif; }
+
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 0; }
+            .no-print { display: none !important; }
+            .printable-section { 
+                box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; 
+                width: 100% !important; max-width: 100% !important;
+            }
+            #tech-specs-section { page-break-before: auto; page-break-inside: avoid; }
+            [contenteditable="true"]:hover { outline: none; }
+            .calculator-section { display: none; } /* Ocultar interfaz app al imprimir */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 sm:p-8">
+
+    <!-- ============================================== -->
+    <!-- INTERFAZ DE USUARIO (APP MÓVIL) -->
+    <!-- ============================================== -->
+    <div id="calculator-section" class="max-w-4xl mx-auto bg-white p-4 sm:p-6 rounded-xl shadow-lg no-print calculator-section min-h-screen sm:min-h-0">
+        
+        <!-- Header App -->
+        <div class="flex justify-between items-center mb-6 sticky top-0 bg-white z-10 py-2 border-b border-gray-100">
+             <div class="flex items-center gap-2">
+                 <div class="bg-blue-100 p-2 rounded-lg"><i class="fas fa-snowflake text-blue-600"></i></div>
+                 <div>
+                     <h2 class="text-lg font-bold text-gray-900 leading-none">EasyCool</h2>
+                     <span class="text-xs text-gray-500">App v6.0</span>
+                 </div>
+             </div>
+             <button id="open-price-editor-btn" class="bg-gray-800 text-white text-xs font-bold py-2 px-3 rounded-lg shadow active:scale-95 transition-transform flex items-center gap-2">
+               <i class="fas fa-cog"></i> Config
+            </button>
+        </div>
+        
+        <div class="grid gap-4">
+            <!-- 1. Cliente -->
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <h3 class="font-bold text-gray-700 mb-3 flex items-center gap-2"><i class="fas fa-user-circle text-blue-500"></i> Cliente</h3>
+                <div class="space-y-3">
+                    <input type="text" id="calc-client-name" placeholder="Nombre / Razón Social" class="input-mobile border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none">
+                    <div class="flex gap-3">
+                        <input type="text" id="calc-client-rut" placeholder="RUT" class="input-mobile border border-gray-300 p-3 rounded-lg w-1/3 focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input type="text" id="calc-client-address" placeholder="Dirección" class="input-mobile border border-gray-300 p-3 rounded-lg w-2/3 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Calculadora BTU (Colapsable) -->
+            <details class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm group">
+                <summary class="font-bold text-gray-700 mb-1 flex justify-between items-center cursor-pointer list-none">
+                    <span class="flex items-center gap-2"><i class="fas fa-calculator text-orange-500"></i> Calcular BTU (Opcional)</span>
+                    <i class="fas fa-chevron-down text-gray-400 group-open:rotate-180 transition-transform"></i>
+                </summary>
+                <div class="mt-4 grid grid-cols-2 gap-3">
+                    <input type="number" id="ancho-mts" placeholder="Ancho (m)" class="input-mobile border p-3 rounded-lg text-center" inputmode="decimal">
+                    <input type="number" id="largo-mts" placeholder="Largo (m)" class="input-mobile border p-3 rounded-lg text-center" inputmode="decimal">
+                    <input type="number" id="alto-mts" value="2.4" class="input-mobile border p-3 rounded-lg text-center bg-gray-50" readonly>
+                    <button id="calculate-btu-btn" class="bg-orange-500 text-white rounded-lg font-bold shadow active:bg-orange-600">Calcular</button>
+                </div>
+                <p id="btu-result" class="mt-3 text-indigo-600 font-bold text-center text-lg"></p>
+                <div class="hidden"><input id="numero-ventanas" value="1"><input id="numero-personas" value="2"><select id="exposicion-solar"><option value="mucha">Sol</option></select></div>
+            </details>
+
+            <!-- 3. Equipos -->
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <h3 class="font-bold text-gray-700 mb-3 flex items-center gap-2"><i class="fas fa-box-open text-green-500"></i> Equipos</h3>
+                <div id="equipos-container" class="space-y-3 mb-4"></div>
+                <button id="add-equipo-btn" class="w-full text-blue-600 text-sm font-bold border border-blue-200 border-dashed py-3 rounded-lg bg-blue-50 hover:bg-blue-100 active:scale-[0.98] transition-transform">
+                    <i class="fas fa-plus"></i> Agregar Equipo
+                </button>
+            </div>
+
+            <!-- 4. Costos Adicionales -->
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <h3 class="font-bold text-gray-700 mb-3 flex items-center gap-2"><i class="fas fa-tools text-gray-500"></i> Instalación & Extras</h3>
+                
+                <div class="hidden"> <!-- Materiales Ocultos -->
+                    <input id="qty-soporte" value="1"><input id="costo-soporte" value="7500">
+                    <input id="qty-canaleta-1" value="1"><input id="costo-canaleta-1" value="5950">
+                    <input id="qty-canaleta-2" value="1"><input id="costo-canaleta-2" value="1210">
+                    <input id="qty-cordon" value="3"><input id="costo-cordon" value="917">
+                    <input id="qty-bomba" value="0"><input id="costo-bomba" value="45000">
+                    <input id="qty-tuberia" value="0"><input id="costo-tuberia" value="15000">
+                </div>
+                
+                <div class="grid grid-cols-1 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-indigo-700 mb-1">Mano de Obra (Por Equipo)</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-3 text-gray-500">$</span>
+                            <input type="number" id="costo-mano-obra" class="input-mobile border border-indigo-200 bg-indigo-50 p-3 pl-6 rounded-lg w-full font-bold text-gray-800" value="120000" inputmode="numeric">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Extras (Neto)</label>
+                            <input type="number" id="costo-adicionales" class="input-mobile border border-gray-300 p-3 rounded-lg w-full" value="0" placeholder="$" inputmode="numeric">
+                        </div>
+                        <div>
+                             <label class="block text-xs font-bold text-gray-500 mb-1">Margen Mat. %</label>
+                             <input type="number" id="margen-ganancia" class="input-mobile border border-gray-300 p-3 rounded-lg w-full text-center" value="30" inputmode="numeric">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="h-24"></div> <!-- Espaciador para botón flotante -->
+
+        <!-- Botón Flotante de Acción -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] flex gap-3 z-40">
+            <button id="generate-quote-btn" class="flex-1 bg-indigo-600 text-white font-bold py-3 rounded-xl shadow-lg active:bg-indigo-700 active:scale-[0.98] transition-transform flex justify-center items-center gap-2">
+                <i class="fas fa-file-pdf"></i> Generar Cotización
+            </button>
+            <button id="generate-sales-pitch-btn" class="bg-blue-100 text-blue-700 font-bold py-3 px-4 rounded-xl active:bg-blue-200 hidden">
+                <i class="fab fa-whatsapp text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Output IA (WhatsApp) -->
+        <div id="sales-pitch-container" class="mt-4 bg-green-50 p-4 rounded-xl border border-green-200 hidden mb-20">
+            <h4 class="text-sm font-bold text-green-800 mb-2 flex items-center gap-2"><i class="fab fa-whatsapp"></i> Texto para el Cliente</h4>
+            <div id="sales-pitch-output" class="text-sm text-gray-800 whitespace-pre-wrap bg-white p-3 rounded border border-gray-200 mb-3 select-all"></div>
+            <button id="copy-pitch-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg text-sm shadow">Copiar Texto</button>
+        </div>
+        
+        <!-- Finanzas Ocultas (Datos internos) -->
+        <div id="financial-summary" class="hidden"><span id="summary-costo-materiales"></span><span id="summary-iva-a-pagar"></span><span id="summary-ganancia-total"></span></div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- PLANTILLA DE COTIZACIÓN (PDF / IMPRIMIR) -->
+    <!-- ========================================================= -->
+    <div id="quote-section" class="max-w-4xl mx-auto bg-white p-8 sm:p-12 shadow-2xl printable-section hidden"> <!-- Oculto por defecto en móvil -->
+        
+        <!-- ENCABEZADO IDÉNTICO AL ORIGINAL -->
+        <header class="flex justify-between items-start pb-4 border-b border-gray-200 mb-6">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 flex-shrink-0">
+                    <svg width="100%" height="100%" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect y="8" width="45" height="8" rx="4" fill="#4285F4" opacity="0.9"/>
+                        <rect x="5" y="21" width="40" height="8" rx="4" fill="#7baaf7" opacity="0.9"/>
+                        <rect x="10" y="34" width="35" height="8" rx="4" fill="#acd0fc"/>
+                    </svg>
+                </div>
+                <div class="header-logo-text flex flex-col justify-center">
+                    <span class="text-2xl font-bold text-gray-800 leading-none tracking-tight">EASYCOOL</span>
+                    <span class="text-sm text-gray-500 font-normal leading-tight">Climatización</span>
+                </div>
+            </div>
+            <div class="text-right header-company-info" contenteditable="true">
+                <h1 class="text-xl font-bold text-gray-800 mb-1">EasyCool Climatización</h1>
+                <p class="text-sm text-gray-600 leading-tight">RUT: 77.448.234-2</p>
+                <p class="text-sm text-gray-600 leading-tight">Providencia, Santiago</p>
+                <p class="text-sm text-gray-600 leading-tight mt-1">ventas@easycoolclimatizacion.com</p>
+                <p class="text-sm text-gray-600 leading-tight">+569 5777 6174 / +569 4489 4101</p>
+            </div>
+        </header>
+        
+        <div class="flex justify-between items-end mb-8 font-['Inter']">
+            <div class="w-2/3">
+                <p class="text-xs text-gray-400 font-bold uppercase mb-1">Preparado para:</p>
+                <p contenteditable="true" class="text-lg font-bold text-gray-900 leading-snug" id="client-name">[Nombre Cliente]</p>
+                <p contenteditable="true" class="text-sm text-gray-600" id="client-rut">[RUT]</p>
+                <p contenteditable="true" class="text-sm text-gray-600" id="client-address">[Dirección]</p>
+            </div>
+            <div class="w-1/3 text-right">
+                <div class="inline-block text-right">
+                    <p class="text-2xl font-bold text-indigo-900 mb-1">COTIZACIÓN</p>
+                    <p class="text-sm text-gray-600">Nº <span contenteditable="true" class="font-bold text-gray-900" id="quote-number">EC-0000</span></p>
+                    <p class="text-sm text-gray-600">Fecha: <span id="current-date" class="font-medium"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <main>
+             <div class="mb-8">
+                <table class="w-full text-left border-collapse" id="items-table">
+                    <thead>
+                        <tr class="border-b-2 border-gray-100">
+                            <th class="py-2 text-xs font-bold text-gray-500 uppercase tracking-wider">Descripción</th>
+                            <th class="py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider w-32">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm text-gray-700"></tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-end border-t border-gray-200 pt-4">
+                <div class="w-1/2 md:w-1/3 space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Neto:</span>
+                        <span id="subtotal" class="font-medium text-gray-900" contenteditable="true">$ 0</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">IVA (19%):</span>
+                        <span id="iva" class="font-medium text-gray-900" contenteditable="true">$ 0</span>
+                    </div>
+                    <div class="flex justify-between items-center text-lg font-bold text-indigo-900 mt-2 pt-2 border-t border-gray-100">
+                        <span>TOTAL:</span>
+                        <span id="total" contenteditable="true">$ 0</span>
+                    </div>
+                </div>
+            </div>
+
+             <div id="tech-specs-section" class="mt-10 bg-gray-50 p-6 rounded-lg border border-gray-100" style="display: none;">
+                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Detalle Técnico</h4>
+                <div id="tech-specs-content" class="text-xs text-gray-600 space-y-2" contenteditable="true"></div>
+            </div>
+
+             <div class="mt-10 pt-6 border-t border-gray-200">
+                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Condiciones</h4>
+                <ul contenteditable="true" class="text-xs text-gray-500 list-disc list-inside space-y-1">
+                    <li>Forma de Pago: 50% anticipo, 50% al término.</li>
+                    <li>Garantía: 1 Año instalación (fugas/drenaje). Equipos según marca.</li>
+                    <li>Validez: 10 días hábiles.</li>
+                    <li id="ficha-tecnica-note" style="display:none;">Se adjunta ficha técnica.</li>
+                </ul>
+            </div>
+        </main>
+        
+        <footer class="text-center mt-12 pt-8 border-t border-gray-100">
+            <p class="text-xs text-gray-400">EasyCool Climatización - Expertos en Confort</p>
+        </footer>
+    </div>
+    
+    <!-- Botón Flotante para Descargar en la vista de impresión (aparece solo cuando la cotización está lista) -->
+    <div id="print-action-bar" class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t z-50 hidden flex justify-center no-print">
+        <button id="print-btn" class="bg-gray-900 text-white font-bold py-3 px-8 rounded-full shadow-xl flex items-center gap-2 w-full justify-center sm:w-auto">
+            <i class="fas fa-file-download"></i> Guardar PDF
+        </button>
+        <button id="back-to-edit-btn" class="ml-2 bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-full shadow-sm">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+    </div>
+
+    <!-- MODAL CONFIG (MÓVIL) -->
+    <div id="price-editor-modal" class="modal fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black bg-opacity-60 hidden opacity-0 no-print">
+        <div class="modal-content bg-white w-full sm:max-w-xl rounded-t-2xl sm:rounded-2xl shadow-2xl p-6 transform translate-y-full sm:translate-y-0 max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between border-b pb-3 mb-4"><h3 class="font-bold text-lg">Base de Datos</h3><button id="close-modal-btn" class="text-gray-500 text-2xl font-bold">&times;</button></div>
+            
+            <div class="mb-4 bg-blue-50 p-4 rounded-xl border border-blue-100">
+                <p class="text-sm font-bold text-blue-800 mb-2 flex items-center gap-2"><i class="fas fa-camera"></i> Escanear Lista Precios</p>
+                <div class="flex gap-2">
+                    <input type="file" id="price-list-upload" accept="image/*" class="text-xs w-full">
+                    <button id="process-image-btn" class="bg-blue-600 text-white text-xs px-4 py-2 rounded-lg font-bold">Procesar</button>
+                </div>
+                <div id="ai-status-msg" class="text-xs mt-2 font-bold text-blue-600"></div>
+            </div>
+
+            <h4 class="font-bold text-sm text-gray-500 mb-2 uppercase">Equipos</h4>
+            <div id="equipment-price-editor" class="space-y-3 mb-6"></div>
+            
+            <h4 class="font-bold text-sm text-gray-500 mb-2 uppercase">Materiales Base</h4>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+                <div><label class="block text-xs text-gray-500">Soporte</label><input type="number" id="modal-costo-soporte" class="input-mobile border w-full text-right p-2 rounded" inputmode="numeric"></div>
+                <div><label class="block text-xs text-gray-500">Canaleta 100</label><input type="number" id="modal-costo-canaleta-1" class="input-mobile border w-full text-right p-2 rounded" inputmode="numeric"></div>
+                <div><label class="block text-xs text-gray-500">Canaleta 20</label><input type="number" id="modal-costo-canaleta-2" class="input-mobile border w-full text-right p-2 rounded" inputmode="numeric"></div>
+                <div><label class="block text-xs text-gray-500">Cordón</label><input type="number" id="modal-costo-cordon" class="input-mobile border w-full text-right p-2 rounded" inputmode="numeric"></div>
+                <div><label class="block text-xs text-gray-500">Bomba</label><input type="number" id="modal-costo-bomba" class="input-mobile border w-full text-right p-2 rounded" inputmode="numeric"></div>
+                <div><label class="block text-xs text-gray-500">Tubería</label><input type="number" id="modal-costo-tuberia" class="input-mobile border w-full text-right p-2 rounded" inputmode="numeric"></div>
+                <div class="col-span-2 bg-indigo-50 p-2 rounded border border-indigo-100">
+                    <label class="block text-xs font-bold text-indigo-800">Mano Obra Base (x Unidad)</label>
+                    <input type="number" id="modal-costo-mano-obra" class="input-mobile border w-full text-right p-2 rounded font-bold text-indigo-900" inputmode="numeric">
+                </div>
+            </div>
+            <div class="mt-6">
+                <button id="save-prices-btn" class="w-full bg-gray-900 text-white py-3 rounded-xl font-bold">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+const apiKey = ""; 
+let lastQuoteData = {}; 
+let equiposDB = {
+    'hisense-9': { nombre: 'Hisense Hi-Vida 9.000 BTU', costo: 215990, specs: ['Inverter', 'Filtro HI-NANO', 'WiFi'] },
+    'hisense-12': { nombre: 'Hisense Hi-Vida 12.000 BTU', costo: 243990, specs: ['Inverter', 'Filtro HI-NANO', 'WiFi'] },
+    'hisense-18': { nombre: 'Hisense Hi-Vida 18.000 BTU', costo: 353990, specs: ['Inverter', 'Filtro HI-NANO', 'WiFi'] },
+    'hisense-22': { nombre: 'Hisense Hi-Vida 22.000 BTU', costo: 387990, specs: ['Inverter', 'Filtro HI-NANO', 'WiFi'] },
+    'hisense-36': { nombre: 'Hisense Hi-Vida 36.000 BTU', costo: 678990, specs: ['Inverter', 'Filtro HI-NANO', 'WiFi'] },
+    'hisense-pro-12': { nombre: 'Hisense Energy Pro X 12.000 BTU (Black)', costo: 255900, specs: ['Premium Black', 'Ojo Inteligente', 'WiFi'] },
+    'daikin-al-9': { nombre: 'Daikin Serie AL 9.000 BTU', costo: 189990, specs: ['Tecnología Japonesa', 'Silencioso', 'WiFi'] },
+    'daikin-al-12': { nombre: 'Daikin Serie AL 12.000 BTU', costo: 209900, specs: ['Tecnología Japonesa', 'Silencioso', 'WiFi'] },
+    'daikin-al-18': { nombre: 'Daikin Serie AL 18.000 BTU', costo: 379900, specs: ['Tecnología Japonesa', 'Silencioso', 'WiFi'] },
+    'daikin-al-24': { nombre: 'Daikin Serie AL 24.000 BTU', costo: 499900, specs: ['Tecnología Japonesa', 'Silencioso', 'WiFi'] },
+    'otro': { nombre: 'Otro (Manual)', costo: 0, specs: [] }
+};
+
+// --- LOGICA IA ---
+async function llamarGeminiIA() {
+    const btn = document.getElementById('generate-sales-pitch-btn');
+    const output = document.getElementById('sales-pitch-output');
+    document.getElementById('sales-pitch-container').classList.remove('hidden');
+    output.textContent = "Generando mensaje...";
+    try {
+        const prompt = `Escribe un mensaje de WhatsApp para el cliente ${document.getElementById('calc-client-name').value}. Vende esta instalación: ${lastQuoteData.equipoNombres}, Total ${lastQuoteData.totalFormateado}. Destaca: Garantía 1 año EasyCool y Bomba de Vacío. Tono: Experto y cercano.`;
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        const data = await response.json();
+        output.textContent = data.candidates[0].content.parts[0].text;
+        document.getElementById('sales-pitch-container').scrollIntoView({behavior:'smooth'});
+    } catch(e) { output.textContent = "Error IA (Revisa API Key)"; }
+}
+
+async function procesarImagenPrecios() {
+    const file = document.getElementById('price-list-upload').files[0];
+    if(!file) return alert("Sube imagen");
+    const status = document.getElementById('ai-status-msg');
+    status.textContent = "Escaneando...";
+    try {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = async () => {
+            const base64 = reader.result.split(',')[1];
+            const dbContext = JSON.stringify(Object.keys(equiposDB).map(k=>({key:k, name:equiposDB[k].nombre})));
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: `Extrae precios netos de la imagen para estas keys: ${dbContext}. Devuelve JSON {key: precioInt}.` }, { inlineData: { mimeType: file.type, data: base64 } }] }]
+                })
+            });
+            const data = await response.json();
+            const json = JSON.parse(data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim());
+            let count = 0;
+            for(let k in json) { if(equiposDB[k]) { equiposDB[k].costo = json[k]; document.getElementById(`modal-costo-${k}`).value = json[k]; count++; } }
+            status.textContent = `Actualizados ${count} precios.`;
+        };
+    } catch(e) { status.textContent = "Error escaneo."; console.error(e); }
+}
+
+// --- LOGICA APP ---
+document.addEventListener('DOMContentLoaded', () => {
+    const dom = {
+        calcBtn: document.getElementById('calculate-btu-btn'),
+        btuRes: document.getElementById('btu-result'),
+        eqContainer: document.getElementById('equipos-container'),
+        addEqBtn: document.getElementById('add-equipo-btn'),
+        genQuoteBtn: document.getElementById('generate-quote-btn'),
+        printBtn: document.getElementById('print-btn'),
+        modal: document.getElementById('price-editor-modal'),
+        openModalBtn: document.getElementById('open-price-editor-btn'),
+        closeModalBtn: document.getElementById('close-modal-btn'),
+        savePricesBtn: document.getElementById('save-prices-btn'),
+        eqPriceEditor: document.getElementById('equipment-price-editor'),
+        backBtn: document.getElementById('back-to-edit-btn')
+    };
+
+    // BTU Calc
+    dom.calcBtn.addEventListener('click', () => {
+        const vol = (parseFloat(document.getElementById('ancho-mts').value)||0) * (parseFloat(document.getElementById('largo-mts').value)||0) * 2.4;
+        let btu = vol * 250 + 1000;
+        dom.btuRes.textContent = `~ ${Math.round(btu/1000)*1000} BTU`;
+    });
+
+    // Filas Equipos
+    function addRow() {
+        const div = document.createElement('div');
+        div.className = 'equipo-item flex gap-2 items-center bg-gray-50 p-2 rounded-lg border border-gray-100';
+        div.innerHTML = `
+            <select class="eq-sel border border-gray-300 rounded p-2 text-sm flex-1 bg-white">${Object.keys(equiposDB).map(k=>`<option value="${k}">${equiposDB[k].nombre}</option>`).join('')}</select>
+            <input type="number" class="eq-qty border border-gray-300 rounded p-2 text-sm w-12 text-center bg-white" value="1" inputmode="numeric">
+            <input type="number" class="eq-cost hidden" readonly>
+            <button class="rm-btn text-red-500 px-2 text-lg font-bold">&times;</button>
+        `;
+        dom.eqContainer.appendChild(div);
+        
+        const sel = div.querySelector('.eq-sel'), cost = div.querySelector('.eq-cost');
+        sel.addEventListener('change', () => {
+            cost.value = equiposDB[sel.value].costo;
+            if(sel.value === 'otro') { cost.classList.remove('hidden'); cost.readOnly = false; cost.focus(); } else { cost.classList.add('hidden'); }
+        });
+        div.querySelector('.rm-btn').addEventListener('click', () => { if(dom.eqContainer.children.length>1) div.remove(); });
+        sel.dispatchEvent(new Event('change'));
+    }
+    dom.addEqBtn.addEventListener('click', addRow);
+    addRow();
+
+    // Generar (Cambio de Vista)
+    dom.genQuoteBtn.addEventListener('click', () => {
+        if(!document.getElementById('calc-client-name').value) { document.getElementById('calc-client-name').focus(); return alert("Falta Nombre Cliente"); }
+        
+        // Populate Quote
+        document.getElementById('client-name').textContent = document.getElementById('calc-client-name').value;
+        document.getElementById('client-rut').textContent = document.getElementById('calc-client-rut').value;
+        document.getElementById('client-address').textContent = document.getElementById('calc-client-address').value;
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-CL');
+
+        const now = new Date();
+        const quoteID = `EC-${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}-${now.getHours()}${now.getMinutes()}`;
+        document.getElementById('quote-number').textContent = quoteID;
+
+        let totalEq = 0, itemsHtml = '', specs = new Set();
+        let mainEquipmentName = "";
+
+        document.querySelectorAll('.equipo-item').forEach((row, idx) => {
+            const k = row.querySelector('.eq-sel').value;
+            const q = parseFloat(row.querySelector('.eq-qty').value)||0;
+            const c = (k==='otro') ? parseFloat(row.querySelector('.eq-cost').value)||0 : equiposDB[k].costo;
+            totalEq += q*c;
+            itemsHtml += `<tr><td class="py-2 border-b border-gray-50"><p class="font-bold text-gray-800">${q}x ${equiposDB[k].nombre}</p><p class="text-xs text-gray-500">Suministro nuevo.</p></td><td class="py-2 text-right border-b border-gray-50 align-top">$ ${(q*c).toLocaleString('es-CL')}</td></tr>`;
+            if(k!=='otro') specs.add(k);
+            if(idx===0) mainEquipmentName = equiposDB[k].nombre.replace(/[^a-zA-Z0-9 ]/g, '');
+        });
+
+        const getVal = (id) => parseFloat(document.getElementById(id).value)||0;
+        const totalMat = totalEq + (getVal('qty-soporte')*getVal('costo-soporte')) + (getVal('qty-canaleta-1')*getVal('costo-canaleta-1')) + (getVal('qty-canaleta-2')*getVal('costo-canaleta-2')) + (getVal('qty-cordon')*getVal('costo-cordon')) + (getVal('qty-bomba')*getVal('costo-bomba')) + (getVal('qty-tuberia')*getVal('costo-tuberia'));
+        const ventaMat = totalMat * (1 + (getVal('margen-ganancia')/100));
+        const moTotal = getVal('costo-mano-obra') * document.querySelectorAll('.equipo-item').length;
+        const extras = getVal('costo-adicionales');
+        
+        const neto = ventaMat + moTotal + extras;
+        const iva = neto * 0.19;
+        const total = neto + iva;
+
+        // Render Tables
+        const tbody = document.querySelector('#items-table tbody');
+        tbody.innerHTML = itemsHtml;
+        tbody.innerHTML += `<tr><td class="py-2 border-b border-gray-50"><p class="font-bold text-gray-800">Materiales Instalación</p><p class="text-xs text-gray-500">Kit completo estándar.</p></td><td class="py-2 text-right border-b border-gray-50 opacity-0">-</td></tr>`;
+        tbody.innerHTML += `<tr><td class="py-2 border-b border-gray-50"><p class="font-bold text-gray-800">Servicio Instalación</p><p class="text-xs text-gray-500">Montaje y vacío técnico.</p></td><td class="py-2 text-right border-b border-gray-50">$ ${Math.round(moTotal).toLocaleString('es-CL')}</td></tr>`;
+        tbody.rows[0].cells[1].textContent = "$ " + Math.round(ventaMat).toLocaleString('es-CL');
+        if(extras > 0) tbody.innerHTML += `<tr><td class="py-2">Adicionales</td><td class="py-2 text-right">$ ${Math.round(extras).toLocaleString('es-CL')}</td></tr>`;
+
+        // Render Specs
+        const specBox = document.getElementById('tech-specs-content'); specBox.innerHTML = '';
+        if(specs.size > 0) {
+            document.getElementById('tech-specs-section').style.display = 'block';
+            specs.forEach(k => specBox.innerHTML += `<p><strong>${equiposDB[k].nombre}:</strong> ${equiposDB[k].specs.join(', ')}.</p>`);
+        } else { document.getElementById('tech-specs-section').style.display = 'none'; }
+
+        // Totales
+        document.getElementById('subtotal').textContent = "$ " + Math.round(neto).toLocaleString('es-CL');
+        document.getElementById('iva').textContent = "$ " + Math.round(iva).toLocaleString('es-CL');
+        document.getElementById('total').textContent = "$ " + Math.round(total).toLocaleString('es-CL');
+
+        lastQuoteData = { equipoNombres: Array.from(specs).map(k=>equiposDB[k].nombre).join(', '), totalFormateado: document.getElementById('total').textContent, mainEquipment: mainEquipmentName };
+        
+        // UI Switch to Quote View
+        document.getElementById('calculator-section').classList.add('hidden');
+        document.getElementById('quote-section').classList.remove('hidden');
+        document.getElementById('print-action-bar').classList.remove('hidden');
+        document.getElementById('generate-sales-pitch-btn').classList.remove('hidden'); // Show whatsapp btn in menu
+        window.scrollTo(0,0);
+    });
+
+    // Volver a Editar
+    dom.backBtn.addEventListener('click', () => {
+        document.getElementById('calculator-section').classList.remove('hidden');
+        document.getElementById('quote-section').classList.add('hidden');
+        document.getElementById('print-action-bar').classList.add('hidden');
+    });
+
+    // Modal
+    dom.openModalBtn.addEventListener('click', () => {
+        dom.modal.classList.remove('hidden', 'opacity-0');
+        dom.modal.querySelector('.modal-content').classList.remove('translate-y-full');
+        dom.eqPriceEditor.innerHTML = '';
+        Object.keys(equiposDB).forEach(k => { if(k!=='otro') dom.eqPriceEditor.innerHTML += `<div class="flex justify-between items-center"><span class="text-xs text-gray-600 w-2/3 truncate">${equiposDB[k].nombre}</span><input id="modal-costo-${k}" value="${equiposDB[k].costo}" class="input-mobile border border-gray-300 rounded p-2 text-right w-24" inputmode="numeric"></div>`; });
+        ['soporte','canaleta-1','canaleta-2','cordon','bomba','tuberia','mano-obra'].forEach(id => document.getElementById(`modal-costo-${id}`).value = document.getElementById(`costo-${id}`).value);
+    });
+    dom.savePricesBtn.addEventListener('click', () => {
+        Object.keys(equiposDB).forEach(k => { if(k!=='otro') equiposDB[k].costo = parseFloat(document.getElementById(`modal-costo-${k}`).value)||0; });
+        ['soporte','canaleta-1','canaleta-2','cordon','bomba','tuberia','mano-obra'].forEach(id => document.getElementById(`costo-${id}`).value = document.getElementById(`modal-costo-${id}`).value);
+        dom.modal.classList.add('hidden', 'opacity-0');
+        document.querySelectorAll('.eq-sel').forEach(s => s.dispatchEvent(new Event('change')));
+    });
+    dom.closeModalBtn.addEventListener('click', () => { dom.modal.classList.add('hidden', 'opacity-0'); dom.modal.querySelector('.modal-content').classList.add('translate-y-full'); });
+    document.getElementById('process-image-btn').addEventListener('click', procesarImagenPrecios);
+    document.getElementById('generate-sales-pitch-btn').addEventListener('click', llamarGeminiIA);
+    
+    // Imprimir
+    dom.printBtn.addEventListener('click', () => {
+        const title = document.title;
+        document.title = `Cotización (${document.getElementById('quote-number').textContent}) (${document.getElementById('client-name').textContent}) - Instalación (${lastQuoteData.mainEquipment})`;
+        window.print();
+        setTimeout(() => document.title = title, 1000);
+    });
+    
+    document.getElementById('copy-pitch-btn').addEventListener('click', () => {
+        navigator.clipboard.writeText(document.getElementById('sales-pitch-output').textContent);
+        alert("Texto Copiado");
+    });
+});
+</script>
+</body>
+</html>
