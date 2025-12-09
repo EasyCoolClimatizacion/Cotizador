@@ -39,6 +39,9 @@
             #tech-specs-section { page-break-inside: avoid; }
             [contenteditable="true"]:hover { outline: none; }
             #bottom-nav { display: none !important; }
+            
+            /* Asegurar que los links se vean bien al imprimir */
+            a { text-decoration: none; color: inherit; }
         }
     </style>
 </head>
@@ -279,13 +282,13 @@
             </div>
         </main>
         
+        <!-- FOOTER CON INSTAGRAM CLICKEABLE -->
         <footer class="text-center mt-12 pt-8 border-t border-gray-100">
-            <!-- MENSAJE DE MARKETING (INSTAGRAM) -->
             <div class="mb-4">
                 <p class="text-xs font-bold text-indigo-600 mb-1">¡Síguenos en Instagram para ver nuestras instalaciones!</p>
-                <p class="text-sm font-bold text-gray-800 flex justify-center items-center gap-2">
-                    <i class="fab fa-instagram text-pink-600"></i> @easycool_climatizacion
-                </p>
+                <a href="https://instagram.com/easycool_climatizacion" target="_blank" class="text-sm font-bold text-gray-800 flex justify-center items-center gap-2 hover:text-pink-600 transition-colors cursor-pointer" style="text-decoration: none;">
+                    <i class="fab fa-instagram text-pink-600 text-lg"></i> @easycool_climatizacion
+                </a>
             </div>
             <p class="text-[10px] text-gray-300 font-bold uppercase tracking-widest mt-4">EasyCool Climatización - Santiago, Chile</p>
         </footer>
