@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EasyCool App v7.8.4 Gold</title>
+    <title>EasyCool App v7.8.5 Gold (Persistente)</title>
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -50,7 +50,7 @@
     <!-- VISTA 1: CALCULADORA -->
     <div id="view-calculator" class="view-section max-w-4xl mx-auto bg-white p-4 sm:p-6 rounded-xl shadow-lg no-print calculator-section min-h-screen sm:min-h-0">
         
-        <!-- HEADER APP (LOGO AJUSTADO) -->
+        <!-- HEADER APP -->
         <div class="flex justify-between items-center mb-4 sticky top-0 bg-white z-10 py-3 border-b border-gray-100 shadow-sm -mx-4 px-4 rounded-t-xl">
              <div class="flex items-center gap-3 flex-1">
                  <!-- Icono Logo -->
@@ -349,6 +349,7 @@
 <script>
 const apiKey = ""; 
 let lastQuoteData = {};
+// Precios Base (Hardcoded)
 let equiposDB = {
     'hisense-9': { nombre: 'Hisense Hi-Vida 9.000 BTU', costo: 215990, specs: ['Inverter', 'WiFi', 'Filtro HI-NANO'] },
     'hisense-12': { nombre: 'Hisense Hi-Vida 12.000 BTU', costo: 243990, specs: ['Inverter', 'WiFi', 'Filtro HI-NANO'] },
@@ -362,6 +363,51 @@ let equiposDB = {
     'daikin-al-24': { nombre: 'Daikin AL 24.000 BTU', costo: 499900, specs: ['Tecnología Japonesa', 'Silencioso', 'WiFi'] },
     'otro': { nombre: 'Otro (Manual)', costo: 0, specs: [] }
 };
+
+const MATERIAL_KEYS = ['soporte','canaleta-1','canaleta-2','cordon','bomba','tuberia','mano-obra'];
+
+// --- PERSISTENCIA (GUARDAR Y CARGAR DATOS) ---
+function saveCustomPrices() {
+    const customData = {
+        equipos: {},
+        materiales: {}
+    };
+    // Guardar Costos Equipos
+    Object.keys(equiposDB).forEach(k => {
+        if(k !== 'otro') {
+            customData.equipos[k] = equiposDB[k].costo;
+        }
+    });
+    // Guardar Costos Materiales
+    MATERIAL_KEYS.forEach(key => {
+        customData.materiales[key] = parseFloat(document.getElementById(`costo-${key}`).value) || 0;
+    });
+    
+    localStorage.setItem('easycool_prices_v2', JSON.stringify(customData));
+}
+
+function loadCustomPrices() {
+    const saved = localStorage.getItem('easycool_prices_v2');
+    if(saved) {
+        try {
+            const data = JSON.parse(saved);
+            // Cargar Equipos
+            if(data.equipos) {
+                Object.keys(data.equipos).forEach(k => {
+                    if(equiposDB[k]) equiposDB[k].costo = data.equipos[k];
+                });
+            }
+            // Cargar Materiales
+            if(data.materiales) {
+                Object.keys(data.materiales).forEach(k => {
+                    const el = document.getElementById(`costo-${k}`);
+                    if(el) el.value = data.materiales[k];
+                });
+            }
+            console.log("Precios personalizados cargados.");
+        } catch(e) { console.error("Error cargando precios guardados", e); }
+    }
+}
 
 // --- LOGICA IA ---
 async function llamarGeminiIA() {
@@ -530,6 +576,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentFolio = savedFolio ? parseInt(savedFolio) : 45;
     document.getElementById('calc-folio-number').value = currentFolio;
 
+    // --- CARGAR PRECIOS PERSONALIZADOS (PERSISTENCIA) ---
+    loadCustomPrices();
+
     // --- EVENT LISTENERS BLINDADOS ---
     // Agregamos 'input', 'change', y 'keyup' para asegurar respuesta en móviles
     document.querySelectorAll('input').forEach(i => {
@@ -601,7 +650,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         // FILA 1: Suministro de Equipos y Materiales (Agrupada)
-        // NOTA: fin.ventaEqMat incluye el costo de equipos + costo materiales + margen.
         itemsHtml += `
         <tr>
             <td class="py-2 pl-2 border-b border-gray-100 align-top">
@@ -674,15 +722,23 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.modal.querySelector('.modal-content').classList.remove('translate-y-full');
         dom.eqPriceEditor.innerHTML = '';
         Object.keys(equiposDB).forEach(k => { if(k!=='otro') dom.eqPriceEditor.innerHTML += `<div class="flex justify-between items-center mb-2"><span class="text-xs w-2/3 truncate">${equiposDB[k].nombre}</span><input id="modal-costo-${k}" value="${equiposDB[k].costo}" class="border rounded p-1 text-right w-24 text-xs"></div>`; });
-        ['soporte','canaleta-1','canaleta-2','cordon','bomba','tuberia','mano-obra'].forEach(id => document.getElementById(`modal-costo-${id}`).value = document.getElementById(`costo-${id}`).value);
+        MATERIAL_KEYS.forEach(id => document.getElementById(`modal-costo-${id}`).value = document.getElementById(`costo-${id}`).value);
     });
     dom.closeModalBtn.addEventListener('click', () => { dom.modal.classList.add('hidden', 'opacity-0'); dom.modal.querySelector('.modal-content').classList.add('translate-y-full'); });
+    
+    // --- BOTÓN GUARDAR MODIFICADO PARA PERSISTENCIA ---
     dom.savePricesBtn.addEventListener('click', () => {
+        // Actualizar Memoria
         Object.keys(equiposDB).forEach(k => { if(k!=='otro') equiposDB[k].costo = parseFloat(document.getElementById(`modal-costo-${k}`).value)||0; });
-        ['soporte','canaleta-1','canaleta-2','cordon','bomba','tuberia','mano-obra'].forEach(id => document.getElementById(`costo-${id}`).value = document.getElementById(`modal-costo-${id}`).value);
+        MATERIAL_KEYS.forEach(id => document.getElementById(`costo-${id}`).value = document.getElementById(`modal-costo-${id}`).value);
+        
+        // GUARDAR EN DISCO (LOCALSTORAGE)
+        saveCustomPrices();
+
         dom.modal.classList.add('hidden', 'opacity-0');
         calculateFinances();
     });
+    
     document.getElementById('process-image-btn').addEventListener('click', procesarImagenPrecios);
     
     // Initial Calc
