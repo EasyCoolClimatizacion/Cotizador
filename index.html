@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EasyCool App v7.8.5 Gold (Persistente)</title>
+    <title>EasyCool App v8.0 Manager</title>
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,10 +20,13 @@
         .input-mobile { font-size: 16px; }
         .calculator-section { background: linear-gradient(145deg, #f9fafb, #f3f4f6); }
         .modal { transition: opacity 0.25s ease; z-index: 50; }
-        .modal-content { transition: transform 0.25s ease; max-height: 85vh; }
-        .spinner { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #ffffff; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .modal-content { transition: transform 0.25s ease; max-height: 90vh; }
         
+        /* Scrollbar para la lista de equipos */
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 2px; }
+
         /* Estilos Header Específicos */
         .header-logo-font { font-family: 'Poppins', sans-serif; }
         .header-contact-font { font-family: 'Inter', sans-serif; }
@@ -39,8 +42,6 @@
             #tech-specs-section { page-break-inside: avoid; }
             [contenteditable="true"]:hover { outline: none; }
             #bottom-nav { display: none !important; }
-            
-            /* Asegurar que los links se vean bien al imprimir */
             a { text-decoration: none; color: inherit; }
         }
     </style>
@@ -61,13 +62,12 @@
                         <rect x="10" y="30" width="30" height="7" rx="3.5" fill="#acd0fc"/>
                     </svg>
                  </div>
-                 <!-- Texto Logo -->
                  <div class="flex flex-col justify-center h-10">
                      <span class="text-lg font-bold text-gray-800 leading-none header-logo-font tracking-wide mt-1">EASYCOOL</span>
                      <span class="text-[10px] text-gray-500 font-normal leading-tight header-logo-font">Climatización</span>
                  </div>
              </div>
-             <!-- Botón Config -->
+             <!-- Botón Config (Abre Modal DB) -->
              <button id="open-price-editor-btn" class="bg-gray-50 text-gray-500 p-2 rounded-full hover:bg-gray-100 border border-gray-200 shadow-sm transition-all active:scale-95 flex items-center justify-center w-10 h-10">
                <i class="fas fa-cog text-lg"></i>
             </button>
@@ -75,14 +75,13 @@
         
         <!-- Formulario -->
         <div class="grid gap-4">
-            <!-- Cliente -->
+            <!-- Cliente + Folio -->
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <div class="space-y-3">
                     <div class="flex justify-between items-start gap-2">
                         <div class="flex-1">
                             <input type="text" id="calc-client-name" placeholder="Nombre Cliente" class="input-mobile border-b border-gray-300 p-2 w-full focus:border-indigo-600 outline-none font-bold text-lg">
                         </div>
-                        <!-- CAMPO DE FOLIO EDITABLE -->
                         <div class="w-24 bg-gray-50 p-1 rounded border border-gray-200 text-center">
                             <label class="block text-[9px] text-gray-500 font-bold uppercase">Folio</label>
                             <div class="flex items-center justify-center">
@@ -91,7 +90,6 @@
                             </div>
                         </div>
                     </div>
-                    
                     <div class="flex gap-3">
                         <input type="text" id="calc-client-rut" placeholder="RUT" class="input-mobile border border-gray-200 p-2 rounded w-1/3 text-sm">
                         <input type="text" id="calc-client-address" placeholder="Dirección" class="input-mobile border border-gray-200 p-2 rounded w-2/3 text-sm">
@@ -118,10 +116,10 @@
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <h3 class="text-sm font-bold text-gray-700 mb-2">Equipos de Aire Acondicionado</h3>
                 <div id="equipos-container" class="space-y-3 mb-3"></div>
-                <button id="add-equipo-btn" class="w-full py-3 rounded-lg border-2 border-dashed border-indigo-200 text-indigo-500 font-bold text-sm hover:bg-indigo-50 transition-colors">+ Agregar Equipo</button>
+                <button id="add-equipo-btn" class="w-full py-3 rounded-lg border-2 border-dashed border-indigo-200 text-indigo-500 font-bold text-sm hover:bg-indigo-50 transition-colors">+ Agregar Equipo a Cotización</button>
             </div>
 
-            <!-- MATERIALES (VISIBLE) -->
+            <!-- MATERIALES -->
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <h3 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
                     <i class="fas fa-tools text-gray-500"></i> Materiales e Insumos
@@ -134,7 +132,7 @@
                     <div><label class="block text-xs text-gray-500 mb-1">Tubería (m)</label><input type="number" id="qty-tuberia" class="material-input input-mobile border border-gray-300 rounded p-2 w-full text-center font-semibold" value="0"></div>
                     <div><label class="block text-xs text-gray-500 mb-1">Bomba</label><input type="number" id="qty-bomba" class="material-input input-mobile border border-gray-300 rounded p-2 w-full text-center font-semibold" value="0"></div>
                 </div>
-                <!-- Costos Ocultos (Base de Datos interna) -->
+                <!-- Costos Ocultos -->
                 <div class="hidden">
                     <input id="costo-soporte" value="7500">
                     <input id="costo-canaleta-1" value="5950">
@@ -168,7 +166,7 @@
                 </div>
             </div>
 
-            <!-- PANEL DE GANANCIAS (Visualizador en tiempo real) -->
+            <!-- PANEL DE GANANCIAS -->
             <div class="bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700 text-white mb-2">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-700 pb-1">Tu Bolsillo (Privado)</h3>
                 <div class="grid grid-cols-2 gap-4">
@@ -190,17 +188,9 @@
                         </div>
                     </div>
                 </div>
-                <button id="update-stats-btn" class="mt-3 w-full text-xs text-gray-400 hover:text-white underline">Actualizar Cálculos</button>
             </div>
         </div>
         
-        <!-- Output IA -->
-        <div id="sales-pitch-container" class="mt-4 bg-green-50 p-4 rounded-xl border border-green-200 hidden mb-20">
-            <h4 class="text-sm font-bold text-green-800 mb-2 flex items-center gap-2"><i class="fab fa-whatsapp"></i> Texto para el Cliente</h4>
-            <div id="sales-pitch-output" class="text-sm text-gray-800 whitespace-pre-wrap bg-white p-3 rounded border border-gray-200 mb-3 select-all"></div>
-            <button id="copy-pitch-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg text-sm shadow">Copiar Texto</button>
-        </div>
-
         <div class="h-24"></div>
         <div class="fixed bottom-[60px] left-0 right-0 p-4 z-40 bg-gradient-to-t from-white via-white to-transparent">
             <button id="generate-quote-btn" class="w-full bg-gray-900 text-white font-bold py-4 rounded-xl shadow-2xl text-lg flex items-center justify-center gap-2 hover:bg-black transition-colors">
@@ -225,6 +215,7 @@
 
     <!-- VISTA 3: COTIZACIÓN (PDF) -->
     <div id="quote-section" class="max-w-4xl mx-auto bg-white p-10 shadow-2xl printable-section hidden">
+        <!-- HEADER PDF -->
         <header class="flex justify-between items-start pb-6 border-b border-gray-100 mb-8">
             <div class="flex items-center gap-3">
                 <div class="w-12 h-12 flex-shrink-0">
@@ -246,6 +237,7 @@
             </div>
         </header>
         
+        <!-- INFO CLIENTE PDF -->
         <div class="bg-gray-50 p-6 rounded-lg mb-8 border border-gray-100 flex justify-between items-start header-contact-font">
             <div class="w-2/3">
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">CLIENTE</p>
@@ -295,12 +287,10 @@
                     <li><strong>Forma de Pago:</strong> 50% para agendar y materiales, 50% al finalizar conforme.</li>
                     <li><strong>Garantía:</strong> 1 año por instalación (fugas, drenaje). Equipos según fabricante.</li>
                     <li><strong>Validez:</strong> La oferta es válida por 10 días hábiles.</li>
-                    <li id="ficha-tecnica-note" style="display:none;">Se adjuntan fichas técnicas digitales.</li>
                 </ul>
             </div>
         </main>
         
-        <!-- FOOTER CON INSTAGRAM CLICKEABLE -->
         <footer class="text-center mt-12 pt-8 border-t border-gray-100">
             <div class="mb-4">
                 <p class="text-xs font-bold text-indigo-600 mb-1">¡Síguenos en Instagram para ver nuestras instalaciones!</p>
@@ -321,81 +311,92 @@
         <button id="back-to-edit-btn" class="text-gray-400 text-xs font-bold py-2 uppercase tracking-wider">Volver a Editar</button>
     </div>
 
-    <!-- MODAL -->
+    <!-- MODAL GESTIÓN DE EQUIPOS Y PRECIOS -->
     <div id="price-editor-modal" class="modal fixed inset-0 z-50 flex items-end justify-center bg-black bg-opacity-60 hidden opacity-0 no-print">
-        <div class="modal-content bg-white w-full rounded-t-2xl p-6 h-[80vh] overflow-y-auto">
-            <div class="flex justify-between border-b pb-3 mb-4"><h3 class="font-bold">Base de Datos</h3><button id="close-modal-btn" class="text-2xl">&times;</button></div>
-            <div class="bg-blue-50 p-3 rounded mb-4 border border-blue-100">
-                <label class="text-xs font-bold text-blue-800 block mb-2"><i class="fas fa-camera"></i> Escanear Precios (IA)</label>
-                <div class="flex gap-2"><input type="file" id="price-list-upload" accept="image/*" class="w-full text-xs"><button id="process-image-btn" class="bg-blue-600 text-white text-xs px-3 rounded">Scan</button></div>
-                <div id="ai-status-msg" class="text-xs mt-1 text-blue-600 font-bold"></div>
+        <div class="modal-content bg-white w-full rounded-t-2xl p-6 h-[85vh] flex flex-col">
+            <div class="flex justify-between border-b pb-3 mb-4"><h3 class="font-bold">Gestión de Equipos y Costos</h3><button id="close-modal-btn" class="text-2xl text-gray-500">&times;</button></div>
+            
+            <div class="overflow-y-auto custom-scroll flex-1 pr-1">
+                <h4 class="text-xs font-bold text-gray-400 uppercase mb-2">Costos Unitarios Materiales</h4>
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div><label class="text-xs text-gray-500">Soporte</label><input type="number" id="modal-costo-soporte" class="border w-full text-right p-1 rounded"></div>
+                    <div><label class="text-xs text-gray-500">Canaleta 100</label><input type="number" id="modal-costo-canaleta-1" class="border w-full text-right p-1 rounded"></div>
+                    <div><label class="text-xs text-gray-500">Canaleta 20</label><input type="number" id="modal-costo-canaleta-2" class="border w-full text-right p-1 rounded"></div>
+                    <div><label class="text-xs text-gray-500">Cordón</label><input type="number" id="modal-costo-cordon" class="border w-full text-right p-1 rounded"></div>
+                    <div><label class="text-xs text-gray-500">Bomba</label><input type="number" id="modal-costo-bomba" class="border w-full text-right p-1 rounded"></div>
+                    <div><label class="text-xs text-gray-500">Tubería</label><input type="number" id="modal-costo-tuberia" class="border w-full text-right p-1 rounded"></div>
+                    <div class="col-span-2 bg-indigo-50 p-2 rounded border border-indigo-100"><label class="text-xs font-bold text-indigo-900">Mano de Obra Base</label><input type="number" id="modal-costo-mano-obra" class="border w-full text-right p-1 rounded font-bold text-indigo-900"></div>
+                </div>
+
+                <h4 class="text-xs font-bold text-gray-400 uppercase mb-2 sticky top-0 bg-white py-1 z-10">Lista de Equipos</h4>
+                <div id="equipment-price-editor" class="space-y-2 mb-4">
+                    <!-- Aquí se renderiza la lista dinámica -->
+                </div>
+
+                <!-- SECCIÓN AGREGAR NUEVO EQUIPO -->
+                <div class="bg-green-50 p-3 rounded-lg border border-green-200 mb-4">
+                    <h5 class="text-[10px] font-bold uppercase text-green-700 mb-2"><i class="fas fa-plus-circle"></i> Agregar Nuevo Equipo</h5>
+                    <div class="flex flex-col gap-2">
+                        <input id="new-eq-name" type="text" placeholder="Nombre (ej: Midea Xtreme 9.000)" class="text-xs border border-green-200 p-2 rounded w-full focus:outline-none focus:border-green-500">
+                        <div class="flex gap-2">
+                            <input id="new-eq-price" type="number" placeholder="Costo Neto" class="text-xs border border-green-200 p-2 rounded w-full focus:outline-none focus:border-green-500">
+                            <button id="add-new-eq-btn" class="bg-green-600 text-white px-4 rounded font-bold text-lg shadow-sm hover:bg-green-700">+</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <h4 class="text-xs font-bold text-gray-400 uppercase mb-2">Costos Unitarios Materiales</h4>
-            <div class="grid grid-cols-2 gap-3 mb-6">
-                <div><label class="text-xs text-gray-500">Soporte</label><input type="number" id="modal-costo-soporte" class="border w-full text-right p-1 rounded"></div>
-                <div><label class="text-xs text-gray-500">Canaleta 100</label><input type="number" id="modal-costo-canaleta-1" class="border w-full text-right p-1 rounded"></div>
-                <div><label class="text-xs text-gray-500">Canaleta 20</label><input type="number" id="modal-costo-canaleta-2" class="border w-full text-right p-1 rounded"></div>
-                <div><label class="text-xs text-gray-500">Cordón</label><input type="number" id="modal-costo-cordon" class="border w-full text-right p-1 rounded"></div>
-                <div><label class="text-xs text-gray-500">Bomba</label><input type="number" id="modal-costo-bomba" class="border w-full text-right p-1 rounded"></div>
-                <div><label class="text-xs text-gray-500">Tubería</label><input type="number" id="modal-costo-tuberia" class="border w-full text-right p-1 rounded"></div>
-                <div class="col-span-2 bg-indigo-50 p-2 rounded border border-indigo-100"><label class="text-xs font-bold text-indigo-900">Mano de Obra Base (x Unidad)</label><input type="number" id="modal-costo-mano-obra" class="border w-full text-right p-1 rounded font-bold text-indigo-900"></div>
+
+            <div class="pt-4 border-t mt-2">
+                <button id="save-prices-btn" class="w-full bg-gray-900 text-white py-3 rounded-lg font-bold">Guardar Todo y Cerrar</button>
             </div>
-            <h4 class="text-xs font-bold text-gray-400 uppercase mb-2">Equipos</h4>
-            <div id="equipment-price-editor" class="space-y-2 mb-6"></div>
-            <button id="save-prices-btn" class="w-full bg-gray-900 text-white py-3 rounded-lg font-bold">Guardar</button>
         </div>
     </div>
 
 <script>
-const apiKey = ""; 
 let lastQuoteData = {};
-// Precios Base (Hardcoded)
-let equiposDB = {
-    'hisense-9': { nombre: 'Hisense Hi-Vida 9.000 BTU', costo: 215990, specs: ['Inverter', 'WiFi', 'Filtro HI-NANO'] },
-    'hisense-12': { nombre: 'Hisense Hi-Vida 12.000 BTU', costo: 243990, specs: ['Inverter', 'WiFi', 'Filtro HI-NANO'] },
-    'hisense-18': { nombre: 'Hisense Hi-Vida 18.000 BTU', costo: 353990, specs: ['Inverter', 'WiFi', 'Filtro HI-NANO'] },
-    'hisense-22': { nombre: 'Hisense Hi-Vida 22.000 BTU', costo: 387990, specs: ['Inverter', 'WiFi', 'Filtro HI-NANO'] },
-    'hisense-36': { nombre: 'Hisense Hi-Vida 36.000 BTU', costo: 678990, specs: ['Inverter', 'WiFi', 'Filtro HI-NANO'] },
-    'hisense-pro-12': { nombre: 'Hisense Pro X 12.000 (Black)', costo: 255900, specs: ['Premium Black', 'WiFi', 'Ojo Inteligente'] },
-    'daikin-al-9': { nombre: 'Daikin AL 9.000 BTU', costo: 189990, specs: ['Tecnología Japonesa', 'Silencioso', 'WiFi'] },
-    'daikin-al-12': { nombre: 'Daikin AL 12.000 BTU', costo: 209900, specs: ['Tecnología Japonesa', 'Silencioso', 'WiFi'] },
-    'daikin-al-18': { nombre: 'Daikin AL 18.000 BTU', costo: 379900, specs: ['Tecnología Japonesa', 'Silencioso', 'WiFi'] },
-    'daikin-al-24': { nombre: 'Daikin AL 24.000 BTU', costo: 499900, specs: ['Tecnología Japonesa', 'Silencioso', 'WiFi'] },
+
+// DATA BASE INICIAL (Se usa si no hay nada guardado)
+const defaultEquiposDB = {
+    'hisense-9': { nombre: 'Hisense Hi-Vida 9.000 BTU', costo: 215990, specs: ['Inverter', 'WiFi'] },
+    'hisense-12': { nombre: 'Hisense Hi-Vida 12.000 BTU', costo: 243990, specs: ['Inverter', 'WiFi'] },
+    'hisense-18': { nombre: 'Hisense Hi-Vida 18.000 BTU', costo: 353990, specs: ['Inverter', 'WiFi'] },
+    'hisense-22': { nombre: 'Hisense Hi-Vida 22.000 BTU', costo: 387990, specs: ['Inverter', 'WiFi'] },
+    'hisense-pro-12': { nombre: 'Hisense Pro X 12.000 (Black)', costo: 255900, specs: ['Premium Black'] },
+    'daikin-al-9': { nombre: 'Daikin AL 9.000 BTU', costo: 189990, specs: ['Japonés', 'Silencioso'] },
+    'daikin-al-12': { nombre: 'Daikin AL 12.000 BTU', costo: 209900, specs: ['Japonés', 'Silencioso'] },
+    'daikin-al-18': { nombre: 'Daikin AL 18.000 BTU', costo: 379900, specs: ['Japonés', 'Silencioso'] },
+    'daikin-al-24': { nombre: 'Daikin AL 24.000 BTU', costo: 499900, specs: ['Japonés', 'Silencioso'] },
     'otro': { nombre: 'Otro (Manual)', costo: 0, specs: [] }
 };
 
+let equiposDB = { ...defaultEquiposDB };
 const MATERIAL_KEYS = ['soporte','canaleta-1','canaleta-2','cordon','bomba','tuberia','mano-obra'];
 
-// --- PERSISTENCIA (GUARDAR Y CARGAR DATOS) ---
+// --- PERSISTENCIA AVANZADA (CRUD) ---
 function saveCustomPrices() {
     const customData = {
-        equipos: {},
+        equipos: equiposDB, // GUARDAMOS TODO EL OBJETO DE EQUIPOS
         materiales: {}
     };
-    // Guardar Costos Equipos
-    Object.keys(equiposDB).forEach(k => {
-        if(k !== 'otro') {
-            customData.equipos[k] = equiposDB[k].costo;
-        }
-    });
+    
     // Guardar Costos Materiales
     MATERIAL_KEYS.forEach(key => {
-        customData.materiales[key] = parseFloat(document.getElementById(`costo-${key}`).value) || 0;
+        const el = document.getElementById(`costo-${key}`);
+        if (el) customData.materiales[key] = parseFloat(el.value) || 0;
     });
     
-    localStorage.setItem('easycool_prices_v2', JSON.stringify(customData));
+    // Guardamos en LocalStorage
+    localStorage.setItem('easycool_db_v3', JSON.stringify(customData));
 }
 
 function loadCustomPrices() {
-    const saved = localStorage.getItem('easycool_prices_v2');
+    const saved = localStorage.getItem('easycool_db_v3');
     if(saved) {
         try {
             const data = JSON.parse(saved);
-            // Cargar Equipos
+            // Cargar Equipos (Reemplaza la DB por la guardada para tener los agregados/borrados)
             if(data.equipos) {
-                Object.keys(data.equipos).forEach(k => {
-                    if(equiposDB[k]) equiposDB[k].costo = data.equipos[k];
-                });
+                equiposDB = data.equipos;
             }
             // Cargar Materiales
             if(data.materiales) {
@@ -404,52 +405,95 @@ function loadCustomPrices() {
                     if(el) el.value = data.materiales[k];
                 });
             }
-            console.log("Precios personalizados cargados.");
-        } catch(e) { console.error("Error cargando precios guardados", e); }
+        } catch(e) { console.error("Error cargando DB", e); }
     }
 }
 
-// --- LOGICA IA ---
-async function llamarGeminiIA() {
-    const output = document.getElementById('sales-pitch-output');
-    try {
-        const prompt = `Escribe un mensaje de WhatsApp para ${document.getElementById('calc-client-name').value}. Vende: ${lastQuoteData.equipoNombres}, Total ${lastQuoteData.totalFormateado}. Destaca Garantía 1 año EasyCool.`;
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
-        const data = await response.json();
-        if(data.candidates) console.log("IA OK");
-    } catch(e) { console.error("Error IA"); }
+// --- LOGICA GESTIÓN EQUIPOS ---
+function addNewEquipment() {
+    const name = document.getElementById('new-eq-name').value;
+    const price = parseInt(document.getElementById('new-eq-price').value);
+
+    if(!name || isNaN(price)) {
+        alert("Por favor ingresa un nombre y un precio válido.");
+        return;
+    }
+
+    // Crear ID único
+    const key = 'custom-' + Date.now();
+    equiposDB[key] = { nombre: name, costo: price, specs: ['Personalizado'] };
+
+    // Limpiar inputs
+    document.getElementById('new-eq-name').value = '';
+    document.getElementById('new-eq-price').value = '';
+
+    // Guardar inmediatamente
+    saveCustomPrices();
+    
+    // Renderizar de nuevo la lista en el modal
+    renderModalItems();
+    
+    // Actualizar todos los dropdowns de la calculadora
+    updateAllDropdowns();
 }
 
-async function procesarImagenPrecios() {
-    const file = document.getElementById('price-list-upload').files[0];
-    if(!file) return alert("Sube imagen");
-    const status = document.getElementById('ai-status-msg');
-    status.textContent = "Escaneando...";
-    try {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onloadend = async () => {
-            const base64 = reader.result.split(',')[1];
-            const dbContext = JSON.stringify(Object.keys(equiposDB).map(k=>({key:k, name:equiposDB[k].nombre})));
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: `Extrae precios netos de la imagen para estas keys: ${dbContext}. Devuelve JSON {key: precioInt}.` }, { inlineData: { mimeType: file.type, data: base64 } }] }]
-                })
-            });
-            const data = await response.json();
-            if(data.candidates) {
-                const json = JSON.parse(data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim());
-                let count = 0;
-                for(let k in json) { if(equiposDB[k]) { equiposDB[k].costo = json[k]; document.getElementById(`modal-costo-${k}`).value = json[k]; count++; } }
-                status.textContent = `Actualizados ${count} precios.`;
-            } else { status.textContent = "Error: Sin respuesta."; }
-        };
-    } catch(e) { status.textContent = "Error escaneo."; console.error(e); }
+window.deleteEquipment = (key) => {
+    if(confirm(`¿Estás seguro de ELIMINAR "${equiposDB[key].nombre}" de la lista?`)) {
+        delete equiposDB[key];
+        saveCustomPrices();
+        renderModalItems();
+        updateAllDropdowns();
+    }
+};
+
+function renderModalItems() {
+    const container = document.getElementById('equipment-price-editor');
+    container.innerHTML = '';
+    
+    Object.keys(equiposDB).forEach(k => {
+        if(k !== 'otro') {
+            const eq = equiposDB[k];
+            const div = document.createElement('div');
+            div.className = "flex justify-between items-center bg-gray-50 p-2 rounded border border-gray-100 gap-2";
+            div.innerHTML = `
+                <button onclick="deleteEquipment('${k}')" class="text-gray-300 hover:text-red-500 transition-colors px-2" title="Eliminar"><i class="fas fa-trash"></i></button>
+                <div class="flex-1 overflow-hidden">
+                    <p class="text-xs font-bold text-gray-700 truncate">${eq.nombre}</p>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="text-xs text-gray-400">$</span>
+                    <input id="modal-costo-${k}" type="number" value="${eq.costo}" class="border rounded p-1 text-right w-20 text-xs font-mono" onchange="updateEquipmentCost('${k}', this.value)">
+                </div>
+            `;
+            container.appendChild(div);
+        }
+    });
 }
+
+// Función auxiliar para actualizar precio desde el input del modal sin borrar
+window.updateEquipmentCost = (key, val) => {
+    if(equiposDB[key]) {
+        equiposDB[key].costo = parseFloat(val) || 0;
+    }
+};
+
+function updateAllDropdowns() {
+    // Busca todos los selects existentes en la calculadora
+    const selects = document.querySelectorAll('.eq-sel');
+    selects.forEach(sel => {
+        const currentVal = sel.value;
+        // Reconstruye las opciones
+        sel.innerHTML = Object.keys(equiposDB).map(k => `<option value="${k}">${equiposDB[k].nombre}</option>`).join('');
+        // Intenta mantener el valor seleccionado, si existe, sino va al primero
+        if(equiposDB[currentVal]) {
+            sel.value = currentVal;
+        } else {
+            sel.value = Object.keys(equiposDB)[0];
+        }
+    });
+    calculateFinances();
+}
+
 
 // --- NAVEGACIÓN ---
 window.switchTab = (tab) => {
@@ -504,21 +548,22 @@ window.loadFromHistory = (index) => {
     window.scrollTo(0,0);
 };
 
-// --- FINANZAS (LÓGICA BLINDADA) ---
+// --- FINANZAS ---
 function calculateFinances() {
     const getEl = (id) => document.getElementById(id);
     if (!getEl('live-costo-materiales')) return;
 
-    // 1. Equipos
     let totalEq = 0;
     document.querySelectorAll('.equipo-item').forEach(row => {
         const k = row.querySelector('.eq-sel').value;
         const q = parseFloat(row.querySelector('.eq-qty').value)||0;
-        const c = (k==='otro') ? parseFloat(row.querySelector('.eq-cost').value)||0 : equiposDB[k].costo;
-        totalEq += q*c;
+        // Chequeo de seguridad por si el equipo fue borrado
+        if(equiposDB[k]) {
+            const c = (k==='otro') ? parseFloat(row.querySelector('.eq-cost').value)||0 : equiposDB[k].costo;
+            totalEq += q*c;
+        }
     });
 
-    // 2. Materiales (Verificación explícita de cada item)
     const getVal = (id) => parseFloat(getEl(id)?.value) || 0;
     
     const costoSoportes = getVal('qty-soporte') * getVal('costo-soporte');
@@ -529,8 +574,6 @@ function calculateFinances() {
     const costoTuberia = getVal('qty-tuberia') * getVal('costo-tuberia');
 
     const totalMat = costoSoportes + costoCanaleta1 + costoCanaleta2 + costoCordon + costoBomba + costoTuberia;
-    
-    // 3. Márgenes y Mano de Obra
     const margen = getVal('margen-ganancia')/100;
     const ventaEqMat = (totalEq + totalMat) * (1 + margen);
     const moBase = getVal('costo-mano-obra');
@@ -538,13 +581,11 @@ function calculateFinances() {
     const totalMO = moBase * numEq;
     const extras = getVal('costo-adicionales');
     
-    // 4. Totales
     const neto = ventaEqMat + totalMO + extras;
     const iva = neto * 0.19;
     const total = neto + iva;
     const ganancia = neto - (totalEq + totalMat); 
 
-    // Actualizar Panel
     getEl('live-costo-materiales').textContent = "$ " + Math.round((totalEq + totalMat)*1.19).toLocaleString('es-CL');
     getEl('live-venta-neta').textContent = "$ " + Math.round(neto).toLocaleString('es-CL');
     getEl('live-ganancia').textContent = "$ " + Math.round(ganancia).toLocaleString('es-CL');
@@ -566,30 +607,31 @@ document.addEventListener('DOMContentLoaded', () => {
         openModalBtn: document.getElementById('open-price-editor-btn'),
         closeModalBtn: document.getElementById('close-modal-btn'),
         savePricesBtn: document.getElementById('save-prices-btn'),
-        eqPriceEditor: document.getElementById('equipment-price-editor'),
-        backBtn: document.getElementById('back-to-edit-btn'),
-        updateStatsBtn: document.getElementById('update-stats-btn')
+        addNewEqBtn: document.getElementById('add-new-eq-btn'),
+        backBtn: document.getElementById('back-to-edit-btn')
     };
 
-    // --- CORRELATIVO LOGIC ---
     const savedFolio = localStorage.getItem('easycool_next_folio');
     const currentFolio = savedFolio ? parseInt(savedFolio) : 45;
     document.getElementById('calc-folio-number').value = currentFolio;
 
-    // --- CARGAR PRECIOS PERSONALIZADOS (PERSISTENCIA) ---
+    // CARGAR DB
     loadCustomPrices();
 
-    // --- EVENT LISTENERS BLINDADOS ---
-    // Agregamos 'input', 'change', y 'keyup' para asegurar respuesta en móviles
+    // Event Listeners Inputs
     document.querySelectorAll('input').forEach(i => {
-        ['input', 'change', 'keyup'].forEach(evt => i.addEventListener(evt, calculateFinances));
+        if(i.id !== 'new-eq-name' && i.id !== 'new-eq-price') {
+             ['input', 'change', 'keyup'].forEach(evt => i.addEventListener(evt, calculateFinances));
+        }
     });
 
+    // BTU Calc
     dom.calcBtn.addEventListener('click', () => {
         const v = (parseFloat(document.getElementById('ancho-mts').value)||0)*(parseFloat(document.getElementById('largo-mts').value)||0)*2.4;
         dom.btuRes.textContent = `Sugerido: ~${Math.round((v*250+1000)/1000)*1000} BTU`;
     });
 
+    // Agregar Fila Equipo (Visual)
     function addRow() {
         const div = document.createElement('div');
         div.className = 'equipo-item flex gap-2 items-center bg-gray-50 p-2 rounded-lg border border-gray-100';
@@ -601,17 +643,25 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         dom.eqContainer.appendChild(div);
         const sel = div.querySelector('.eq-sel'), cost = div.querySelector('.eq-cost');
-        const updateRow = () => { cost.value = equiposDB[sel.value].costo; if(sel.value==='otro') { cost.classList.remove('hidden'); cost.readOnly=false; } else cost.classList.add('hidden'); calculateFinances(); };
+        const updateRow = () => { 
+            if(equiposDB[sel.value]) {
+                cost.value = equiposDB[sel.value].costo; 
+                if(sel.value==='otro') { cost.classList.remove('hidden'); cost.readOnly=false; } else cost.classList.add('hidden'); 
+                calculateFinances(); 
+            }
+        };
         sel.addEventListener('change', updateRow);
         div.querySelector('.rm-btn').addEventListener('click', () => { if(dom.eqContainer.children.length>1) div.remove(); calculateFinances(); });
         div.querySelector('.eq-qty').addEventListener('input', calculateFinances);
-        sel.value = Object.keys(equiposDB)[0]; updateRow();
+        
+        // Seleccionar primero
+        sel.value = Object.keys(equiposDB)[0]; 
+        updateRow();
     }
     dom.addEqBtn.addEventListener('click', addRow);
     addRow();
 
-    if(dom.updateStatsBtn) dom.updateStatsBtn.addEventListener('click', calculateFinances);
-
+    // Generar Cotización
     dom.genQuoteBtn.addEventListener('click', () => {
         if(!document.getElementById('calc-client-name').value) return document.getElementById('calc-client-name').focus();
         
@@ -621,7 +671,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const dateStr = new Date().toLocaleDateString('es-CL');
         const now = new Date();
         
-        // --- SAVE FOLIO ---
         const folioInput = document.getElementById('calc-folio-number');
         let folioNum = parseInt(folioInput.value) || 0;
         const formattedFolio = String(folioNum).padStart(3, '0');
@@ -641,15 +690,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.equipo-item').forEach((row, idx) => {
             const k = row.querySelector('.eq-sel').value;
             const q = parseFloat(row.querySelector('.eq-qty').value)||0;
-            
-            // Recopilar nombres de equipos para la fila unificada
-            equiposDescriptions.push(`${q}x ${equiposDB[k].nombre}`);
-            
-            if(k!=='otro') specs.add(k);
-            if(idx===0) mainEq = equiposDB[k].nombre.replace(/[^a-zA-Z0-9 ]/g,'');
+            if(equiposDB[k]) {
+                equiposDescriptions.push(`${q}x ${equiposDB[k].nombre}`);
+                if(k!=='otro') specs.add(k);
+                if(idx===0) mainEq = equiposDB[k].nombre.replace(/[^a-zA-Z0-9 ]/g,'');
+            }
         });
         
-        // FILA 1: Suministro de Equipos y Materiales (Agrupada)
         itemsHtml += `
         <tr>
             <td class="py-2 pl-2 border-b border-gray-100 align-top">
@@ -666,22 +713,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const tbody = document.querySelector('#items-table tbody');
         tbody.innerHTML = itemsHtml;
-        
-        // FILA 2: SERVICIO DE INSTALACIÓN
         tbody.innerHTML += `<tr><td class="py-2 pl-2 border-b border-gray-100"><p class="font-bold text-gray-800">Servicio de Instalación Profesional</p><p class="text-xs text-gray-500">Mano de obra certificada, vacío técnico, puesta en marcha y capacitación.</p></td><td class="py-2 pr-2 text-right border-b border-gray-100 align-top font-semibold text-gray-700">$ ${Math.round(fin.totalMO).toLocaleString('es-CL')}</td></tr>`;
-        
-        // FILA 3: EXTRAS
         if(fin.extras>0) tbody.innerHTML += `<tr><td class="py-2 pl-2">Adicionales / Viáticos</td><td class="py-2 pr-2 text-right font-semibold text-gray-700">$ ${Math.round(fin.extras).toLocaleString('es-CL')}</td></tr>`;
 
-        // Specs
         const specBox = document.getElementById('tech-specs-content'); specBox.innerHTML = '';
         let specsHtml = '';
         if(specs.size > 0) {
             document.getElementById('tech-specs-section').style.display = 'block';
             specs.forEach(k => {
-                const s = `<p><strong>${equiposDB[k].nombre}:</strong> ${equiposDB[k].specs.join(', ')}.</p>`;
-                specBox.innerHTML += s;
-                specsHtml += s;
+                if(equiposDB[k].specs && equiposDB[k].specs.length > 0) {
+                     const s = `<p><strong>${equiposDB[k].nombre}:</strong> ${equiposDB[k].specs.join(', ')}.</p>`;
+                     specBox.innerHTML += s;
+                     specsHtml += s;
+                }
             });
         }
 
@@ -717,31 +761,33 @@ document.addEventListener('DOMContentLoaded', () => {
         window.print();
     });
 
+    // --- MODAL Y GESTIÓN ---
     dom.openModalBtn.addEventListener('click', () => {
         dom.modal.classList.remove('hidden', 'opacity-0');
         dom.modal.querySelector('.modal-content').classList.remove('translate-y-full');
-        dom.eqPriceEditor.innerHTML = '';
-        Object.keys(equiposDB).forEach(k => { if(k!=='otro') dom.eqPriceEditor.innerHTML += `<div class="flex justify-between items-center mb-2"><span class="text-xs w-2/3 truncate">${equiposDB[k].nombre}</span><input id="modal-costo-${k}" value="${equiposDB[k].costo}" class="border rounded p-1 text-right w-24 text-xs"></div>`; });
+        // Renderizar Lista al abrir
+        renderModalItems();
+        // Cargar costos materiales en inputs del modal
         MATERIAL_KEYS.forEach(id => document.getElementById(`modal-costo-${id}`).value = document.getElementById(`costo-${id}`).value);
     });
+    
     dom.closeModalBtn.addEventListener('click', () => { dom.modal.classList.add('hidden', 'opacity-0'); dom.modal.querySelector('.modal-content').classList.add('translate-y-full'); });
     
-    // --- BOTÓN GUARDAR MODIFICADO PARA PERSISTENCIA ---
+    // BOTÓN AGREGAR NUEVO EQUIPO
+    dom.addNewEqBtn.addEventListener('click', addNewEquipment);
+
+    // BOTÓN GUARDAR TODO
     dom.savePricesBtn.addEventListener('click', () => {
-        // Actualizar Memoria
-        Object.keys(equiposDB).forEach(k => { if(k!=='otro') equiposDB[k].costo = parseFloat(document.getElementById(`modal-costo-${k}`).value)||0; });
+        // Materiales
         MATERIAL_KEYS.forEach(id => document.getElementById(`costo-${id}`).value = document.getElementById(`modal-costo-${id}`).value);
         
-        // GUARDAR EN DISCO (LOCALSTORAGE)
         saveCustomPrices();
-
+        updateAllDropdowns();
+        
         dom.modal.classList.add('hidden', 'opacity-0');
         calculateFinances();
     });
-    
-    document.getElementById('process-image-btn').addEventListener('click', procesarImagenPrecios);
-    
-    // Initial Calc
+
     calculateFinances();
 });
 </script>
